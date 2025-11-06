@@ -32,35 +32,6 @@
       gap: 4px;
     }
 
-    .progress-container {
-      border: 2px solid black;
-      background: #999;
-      height: 20px;
-      width: 100%;
-      margin-bottom: 10px;
-    }
-
-    .progress-bar {
-      background: #00a800;
-      height: 100%;
-      width: 0%;
-      transition: width 0.5s;
-    }
-
-    button {
-      border: 2px solid black;
-      background: #c0c0c0;
-      font-weight: bold;
-      padding: 5px 10px;
-      cursor: pointer;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    button:disabled {
-      opacity: 0.6;
-      cursor: default;
-    }
-
     .window-controls {
       display: flex;
       gap: 2px;
@@ -82,6 +53,27 @@
     .ctrl-btn:hover {
       background: #808080;
     }
+
+    .progress-container {
+      border: 2px solid black;
+      background: #999;
+      height: 20px;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .progress-bar {
+      background: #00a800;
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s;
+    }
+
+    #status {
+      font-size: 12px;
+      color: #333;
+      margin-top: 6px;
+    }
   </style>
 </head>
 <body>
@@ -96,58 +88,49 @@
 
   <div id="goal">Собрано: 0 / 10000 ₽</div>
   <div class="progress-container"><div id="bar" class="progress-bar"></div></div>
-
-  <button id="connect">🔗 Подключить DonationAlerts</button>
+  <div id="status">⏳ Ожидание данных...</div>
 
   <script>
-    // === Настройки ===
-    const clientId = "16526"; // твой ID приложения с DonationAlerts
     const redirectUri = "https://archiestarkh.github.io/archstrkh/";
-    const scope = "oauth-user-show+donation-subscribe";
-    const authUrl = `https://www.donationalerts.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}`;
     const goal = 10000;
 
-    // === DOM элементы ===
-    const connectBtn = document.getElementById("connect");
     const goalText = document.getElementById("goal");
     const bar = document.getElementById("bar");
+    const statusText = document.getElementById("status");
 
-    // === Проверяем токен в URL (после авторизации) ===
+    // --- Если вернулся токен из OAuth ---
     if (location.hash.includes("access_token")) {
       const params = new URLSearchParams(location.hash.substring(1));
-      const accessToken = params.get("access_token");
-      if (accessToken) {
-        localStorage.setItem("da_token", accessToken);
-        history.replaceState(null, "", redirectUri); // чистим адресную строку
-        alert("✅ DonationAlerts подключён!");
+      const token = params.get("access_token");
+      if (token) {
+        localStorage.setItem("da_token", token);
+        history.replaceState(null, "", redirectUri);
+        statusText.textContent = "✅ DonationAlerts подключён!";
       }
     }
 
-    // === Берём токен из хранилища ===
+    // --- Берём токен из localStorage ---
     const token = localStorage.getItem("da_token");
 
-    connectBtn.onclick = () => {
-      window.location.href = authUrl;
-    };
-
-    // === Обновление прогресса ===
+    // --- Функция обновления прогресс-бара ---
     const updateProgress = (current) => {
       const percent = Math.min((current / goal) * 100, 100);
       bar.style.width = percent + "%";
       goalText.textContent = `Собрано: ${current} / ${goal} ₽`;
     };
 
-    // === Если токен уже есть ===
+    // --- Если токен есть ---
     if (token) {
-      connectBtn.disabled = true;
-      connectBtn.textContent = "✅ DonationAlerts подключён";
-
-      // 💡 Пример фейковых обновлений (замени позже на реальные)
+      statusText.textContent = "✅ DonationAlerts подключён!";
+      // Пример фейковых данных — замени позже на реальные донаты
       let current = 2500;
       updateProgress(current);
+    } else {
+      statusText.textContent = "🔗 Авторизуйся через ссылку OAuth вручную";
     }
   </script>
 </body>
 </html>
+
 
 

@@ -53,6 +53,18 @@ body {
 #goal {
   display: none;
 }
+.button {
+  margin-top: 10px;
+  background: #c0c0c0;
+  border: 2px solid #000;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px #808080;
+  padding: 3px 6px;
+  cursor: pointer;
+  font-family: "MS Sans Serif";
+}
+.button:active {
+  box-shadow: inset 1px 1px #000, inset -1px -1px #fff;
+}
 </style>
 </head>
 <body>
@@ -66,22 +78,45 @@ body {
     </div>
   </div>
 
+  <div class="win95-window" id="login" style="text-align:center; padding:10px;">
+    <div class="win95-titlebar"><div>🔐 Авторизация</div></div>
+    <div class="win95-content">
+      <button class="button" onclick="authorize()">Войти через DonationAlerts</button>
+    </div>
+  </div>
+
   <audio id="ding" src="https://cdn.jsdelivr.net/gh/jxmk/Win95Sounds@main/Windows%2095%20Ding.wav" preload="auto"></audio>
 
 <script>
-const TOKEN = "ВАШ_ТОКЕН_СЮДА"; // вставь сюда свой access_token
+const CLIENT_ID = "16526"; // твой client_id
 const GOAL = 10000;
 let current = 0;
 
-document.getElementById("goal").style.display = "block";
+// Проверяем токен в URL
+const hash = window.location.hash;
+let accessToken = null;
+if (hash.includes("access_token=")) {
+  accessToken = new URLSearchParams(hash.substring(1)).get("access_token");
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+if (accessToken) {
+  document.getElementById("login").style.display = "none";
+  document.getElementById("goal").style.display = "block";
+  connectWebSocket();
+}
+
+function authorize() {
+  const redirect = encodeURIComponent(window.location.href);
+  window.location.href = `https://www.donationalerts.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${redirect}&response_type=token&scope=oauth-donation-index`;
+}
 
 function connectWebSocket() {
   const ws = new WebSocket("wss://socket.donationalerts.ru:443");
   ws.onopen = () => {
-    console.log("✅ Соединение установлено");
     ws.send(JSON.stringify({
       command: "subscribe",
-      params: { access_token: TOKEN }
+      params: { access_token: accessToken }
     }));
   };
   ws.onmessage = (event) => {
@@ -94,7 +129,6 @@ function connectWebSocket() {
       document.getElementById("ding").play();
     }
   };
-  ws.onerror = (e) => console.error("❌ Ошибка WebSocket", e);
 }
 
 function updateBar() {
@@ -102,9 +136,6 @@ function updateBar() {
   document.getElementById("current").textContent = current.toFixed(2);
   document.getElementById("progress").style.width = percent + "%";
 }
-
-// Запуск
-connectWebSocket();
 </script>
 </body>
 </html>

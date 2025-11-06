@@ -27,11 +27,6 @@
       align-items: center;
     }
 
-    h3 span {
-      display: flex;
-      gap: 4px;
-    }
-
     .window-controls {
       display: flex;
       gap: 2px;
@@ -88,7 +83,7 @@
 
   <div id="goal">Собрано: 0 / 10000 ₽</div>
   <div class="progress-container"><div id="bar" class="progress-bar"></div></div>
-  <div id="status">⏳ Ожидание данных...</div>
+  <div id="status"></div>
 
   <script>
     const redirectUri = "https://archiestarkh.github.io/archstrkh/";
@@ -122,15 +117,10 @@
     // --- Если токен есть ---
     if (token) {
       statusText.textContent = "✅ DonationAlerts подключён!";
-      // Пример фейковых данных — замени позже на реальные донаты
+      // Пример фейковых данных (можно заменить реальными)
       let current = 2500;
       updateProgress(current);
-    } else {
-      statusText.textContent = "🔗 Авторизуйся через ссылку OAuth вручную";
     }
   </script>
 </body>
 </html>
-
-
-

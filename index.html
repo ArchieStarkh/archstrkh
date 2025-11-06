@@ -2,7 +2,8 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Donation Goal - Win95</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Донатгол — На хату</title>
 <style>
 body {
   background: transparent;
@@ -20,16 +21,35 @@ body {
 .win95-titlebar {
   background: #000080;
   color: white;
-  padding: 4px;
+  padding: 3px 6px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-weight: bold;
   font-size: 12px;
+  height: 20px;
+  line-height: 14px;
+  user-select: none;
 }
-.win95-titlebar span {
-  font-family: monospace;
-  letter-spacing: 1px;
+.win95-titlebar .buttons {
+  display: flex;
+  gap: 4px;
+}
+.win95-button {
+  width: 16px;
+  height: 14px;
+  background: #c0c0c0;
+  border: 1px solid #000;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px #808080;
+  text-align: center;
+  line-height: 12px;
+  font-size: 10px;
+}
+.win95-button:active {
+  box-shadow: inset 1px 1px #000, inset -1px -1px #fff;
+}
+.win95-button:hover {
+  background: #d8d8d8;
 }
 .win95-content {
   padding: 8px;
@@ -68,74 +88,61 @@ body {
 </style>
 </head>
 <body>
-  <div class="win95-window" id="goal">
-    <div class="win95-titlebar">
-      <div>🏠 На хату</div><span>_ □ X</span>
-    </div>
-    <div class="win95-content">
-      <div>Собрано: <span id="current">0</span> / <span id="goalTotal">10000</span> ₽</div>
-      <div class="bar"><div class="progress" id="progress"></div></div>
-    </div>
-  </div>
-
-  <div class="win95-window" id="login" style="text-align:center; padding:10px;">
-    <div class="win95-titlebar"><div>🔐 Авторизация</div></div>
-    <div class="win95-content">
-      <button class="button" onclick="authorize()">Войти через DonationAlerts</button>
+<div class="win95-window">
+  <div class="win95-titlebar">
+    <div>🏠 На хату</div>
+    <div class="buttons">
+      <div class="win95-button">_</div>
+      <div class="win95-button">□</div>
+      <div class="win95-button">X</div>
     </div>
   </div>
-
-  <audio id="ding" src="https://cdn.jsdelivr.net/gh/jxmk/Win95Sounds@main/Windows%2095%20Ding.wav" preload="auto"></audio>
+  <div class="win95-content">
+    <div>Собрано: <span id="amount">0</span> / 10000 ₽</div>
+    <div class="bar"><div class="progress" id="progress"></div></div>
+    <button class="button" id="connect">🔗 Подключить DonationAlerts</button>
+  </div>
+</div>
 
 <script>
-const CLIENT_ID = "16526"; // твой client_id
-const GOAL = 10000;
-let current = 0;
+const CLIENT_ID = "16526"; // Твой ID приложения
+const REDIRECT_URI = "https://archiestarkh.github.io/archstrkh/";
+const SCOPE = "oauth-user-show+donation-subscribe";
 
-// Проверяем токен в URL
-const hash = window.location.hash;
-let accessToken = null;
-if (hash.includes("access_token=")) {
-  accessToken = new URLSearchParams(hash.substring(1)).get("access_token");
-  window.history.replaceState({}, document.title, window.location.pathname);
+const authBtn = document.getElementById("connect");
+authBtn.addEventListener("click", () => {
+  const authUrl = `https://www.donationalerts.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=${SCOPE}`;
+  window.location.href = authUrl;
+});
+
+function getTokenFromHash() {
+  const hash = window.location.hash.substr(1);
+  const params = new URLSearchParams(hash);
+  return params.get("access_token");
 }
 
-if (accessToken) {
-  document.getElementById("login").style.display = "none";
-  document.getElementById("goal").style.display = "block";
-  connectWebSocket();
+async function getDonations(token) {
+  const res = await fetch("https://www.donationalerts.com/api/v1/alerts/donations", {
+    headers: { Authorization: "Bearer " + token }
+  });
+  const data = await res.json();
+  let sum = 0;
+  data.data.forEach(d => sum += parseFloat(d.amount_main));
+  return sum;
 }
 
-function authorize() {
-  const redirect = encodeURIComponent(window.location.href);
-  window.location.href = `https://www.donationalerts.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${redirect}&response_type=token&scope=oauth-donation-index`;
-}
-
-function connectWebSocket() {
-  const ws = new WebSocket("wss://socket.donationalerts.ru:443");
-  ws.onopen = () => {
-    ws.send(JSON.stringify({
-      command: "subscribe",
-      params: { access_token: accessToken }
-    }));
-  };
-  ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    if (data.event === "donation") {
-      const payload = data.payload;
-      const amount = parseFloat(payload.amount);
-      current += amount;
-      updateBar();
-      document.getElementById("ding").play();
-    }
-  };
-}
-
-function updateBar() {
-  const percent = Math.min(100, (current / GOAL) * 100);
-  document.getElementById("current").textContent = current.toFixed(2);
+async function updateGoal() {
+  const token = getTokenFromHash();
+  if (!token) return;
+  authBtn.style.display = "none";
+  const total = await getDonations(token);
+  document.getElementById("amount").innerText = total.toFixed(0);
+  const percent = Math.min((total / 10000) * 100, 100);
   document.getElementById("progress").style.width = percent + "%";
 }
+
+updateGoal();
 </script>
 </body>
 </html>
+

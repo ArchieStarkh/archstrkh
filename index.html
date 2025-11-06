@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Donation Goal - Win95</title>
+<style>
+body {
+  background: transparent;
+  font-family: "MS Sans Serif", sans-serif;
+  color: black;
+  margin: 0;
+  padding: 0;
+}
+.win95-window {
+  width: 300px;
+  border: 2px solid #000;
+  background: #c0c0c0;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px #808080;
+}
+.win95-titlebar {
+  background: #000080;
+  color: white;
+  padding: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  font-size: 12px;
+}
+.win95-titlebar span {
+  font-family: monospace;
+  letter-spacing: 1px;
+}
+.win95-content {
+  padding: 8px;
+  font-size: 12px;
+}
+.bar {
+  height: 20px;
+  background: #808080;
+  border: 2px solid #000;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px #404040;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.progress {
+  height: 100%;
+  background: linear-gradient(90deg, #0000ff, #0044ff);
+  box-shadow: inset 1px 1px #8080ff, inset -1px -1px #000066;
+  width: 0%;
+  transition: width 0.6s ease-in-out;
+}
+#goal {
+  display: none;
+}
+</style>
+</head>
+<body>
+  <div class="win95-window" id="goal">
+    <div class="win95-titlebar">
+      <div>🏠 На хату</div><span>_ □ X</span>
+    </div>
+    <div class="win95-content">
+      <div>Собрано: <span id="current">0</span> / <span id="goalTotal">10000</span> ₽</div>
+      <div class="bar"><div class="progress" id="progress"></div></div>
+    </div>
+  </div>
+
+  <audio id="ding" src="https://cdn.jsdelivr.net/gh/jxmk/Win95Sounds@main/Windows%2095%20Ding.wav" preload="auto"></audio>
+
+<script>
+const TOKEN = "ВАШ_ТОКЕН_СЮДА"; // вставь сюда свой access_token
+const GOAL = 10000;
+let current = 0;
+
+document.getElementById("goal").style.display = "block";
+
+function connectWebSocket() {
+  const ws = new WebSocket("wss://socket.donationalerts.ru:443");
+  ws.onopen = () => {
+    console.log("✅ Соединение установлено");
+    ws.send(JSON.stringify({
+      command: "subscribe",
+      params: { access_token: TOKEN }
+    }));
+  };
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.event === "donation") {
+      const payload = data.payload;
+      const amount = parseFloat(payload.amount);
+      current += amount;
+      updateBar();
+      document.getElementById("ding").play();
+    }
+  };
+  ws.onerror = (e) => console.error("❌ Ошибка WebSocket", e);
+}
+
+function updateBar() {
+  const percent = Math.min(100, (current / GOAL) * 100);
+  document.getElementById("current").textContent = current.toFixed(2);
+  document.getElementById("progress").style.width = percent + "%";
+}
+
+// Запуск
+connectWebSocket();
+</script>
+</body>
+</html>

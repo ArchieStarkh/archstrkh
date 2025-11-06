@@ -40,7 +40,7 @@ body {
   height: 14px;
   background: #c0c0c0;
   border: 1px solid #000;
-  box-shadow: inset -1px -1px #fff, inset 1px 1px #808080;
+  box-shadow: inset -1px -1px #fff, inset 1px -1px #808080;
   text-align: center;
   line-height: 12px;
   font-size: 10px;
@@ -52,10 +52,16 @@ body {
   background: #d8d8d8;
 }
 .win95-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100px;
   padding: 8px;
   font-size: 12px;
 }
 .bar {
+  width: 100%;
   height: 20px;
   background: #808080;
   border: 2px solid #000;
@@ -69,9 +75,6 @@ body {
   box-shadow: inset 1px 1px #8080ff, inset -1px -1px #000066;
   width: 0%;
   transition: width 0.6s ease-in-out;
-}
-#goal {
-  display: none;
 }
 .button {
   margin-top: 10px;
@@ -104,12 +107,23 @@ body {
   </div>
 </div>
 
+<audio id="ding" preload="auto">
+  <source src="https://upload.wikimedia.org/wikipedia/commons/7/73/Windows_95_startup_sound.ogg" type="audio/ogg">
+</audio>
+
 <script>
-const CLIENT_ID = "16526"; // Твой ID приложения
+const CLIENT_ID = "16526"; // твой ID приложения
 const REDIRECT_URI = "https://archiestarkh.github.io/archstrkh/";
 const SCOPE = "oauth-user-show+donation-subscribe";
+const GOAL = 10000;
 
 const authBtn = document.getElementById("connect");
+const amountEl = document.getElementById("amount");
+const progressEl = document.getElementById("progress");
+const ding = document.getElementById("ding");
+
+let lastTotal = 0;
+
 authBtn.addEventListener("click", () => {
   const authUrl = `https://www.donationalerts.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=${SCOPE}`;
   window.location.href = authUrl;
@@ -122,27 +136,40 @@ function getTokenFromHash() {
 }
 
 async function getDonations(token) {
-  const res = await fetch("https://www.donationalerts.com/api/v1/alerts/donations", {
-    headers: { Authorization: "Bearer " + token }
-  });
-  const data = await res.json();
-  let sum = 0;
-  data.data.forEach(d => sum += parseFloat(d.amount_main));
-  return sum;
+  try {
+    const res = await fetch("https://www.donationalerts.com/api/v1/alerts/donations", {
+      headers: { Authorization: "Bearer " + token }
+    });
+    const data = await res.json();
+    let sum = 0;
+    data.data.forEach(d => sum += parseFloat(d.amount_main));
+    return sum;
+  } catch (e) {
+    console.error(e);
+    return 0;
+  }
 }
 
 async function updateGoal() {
   const token = getTokenFromHash();
   if (!token) return;
   authBtn.style.display = "none";
+
   const total = await getDonations(token);
-  document.getElementById("amount").innerText = total.toFixed(0);
-  const percent = Math.min((total / 10000) * 100, 100);
-  document.getElementById("progress").style.width = percent + "%";
+  amountEl.textContent = total.toFixed(0);
+  const percent = Math.min((total / GOAL) * 100, 100);
+  progressEl.style.width = percent + "%";
+
+  if (total > lastTotal) {
+    ding.play();
+  }
+  lastTotal = total;
 }
 
 updateGoal();
+setInterval(updateGoal, 10000);
 </script>
 </body>
 </html>
+
 

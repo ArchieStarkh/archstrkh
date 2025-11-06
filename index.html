@@ -1,174 +1,152 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Донатгол — На хату</title>
-<style>
-body {
-  background: transparent;
-  font-family: "MS Sans Serif", sans-serif;
-  color: black;
-  margin: 0;
-  padding: 0;
-}
-.win95-window {
-  width: 300px;
-  border: 2px solid #000;
-  background: #c0c0c0;
-  box-shadow: inset -1px -1px #fff, inset 1px 1px #808080;
-}
-.win95-titlebar {
-  background: #000080;
-  color: white;
-  padding: 3px 6px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: bold;
-  font-size: 12px;
-  height: 20px;
-  line-height: 14px;
-  user-select: none;
-}
-.win95-titlebar .buttons {
-  display: flex;
-  gap: 4px;
-}
-.win95-button {
-  width: 16px;
-  height: 14px;
-  background: #c0c0c0;
-  border: 1px solid #000;
-  box-shadow: inset -1px -1px #fff, inset 1px -1px #808080;
-  text-align: center;
-  line-height: 12px;
-  font-size: 10px;
-}
-.win95-button:active {
-  box-shadow: inset 1px 1px #000, inset -1px -1px #fff;
-}
-.win95-button:hover {
-  background: #d8d8d8;
-}
-.win95-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  height: 100px;
-  padding: 8px;
-  font-size: 12px;
-}
-.bar {
-  width: 100%;
-  height: 20px;
-  background: #808080;
-  border: 2px solid #000;
-  box-shadow: inset -1px -1px #fff, inset 1px 1px #404040;
-  margin-top: 6px;
-  overflow: hidden;
-}
-.progress {
-  height: 100%;
-  background: linear-gradient(90deg, #0000ff, #0044ff);
-  box-shadow: inset 1px 1px #8080ff, inset -1px -1px #000066;
-  width: 0%;
-  transition: width 0.6s ease-in-out;
-}
-.button {
-  margin-top: 10px;
-  background: #c0c0c0;
-  border: 2px solid #000;
-  box-shadow: inset -1px -1px #fff, inset 1px 1px #808080;
-  padding: 3px 6px;
-  cursor: pointer;
-  font-family: "MS Sans Serif";
-}
-.button:active {
-  box-shadow: inset 1px 1px #000, inset -1px -1px #fff;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>На хату 💸</title>
+  <style>
+    body {
+      background-color: #bfbfbf;
+      font-family: 'Segoe UI', sans-serif;
+      color: black;
+      text-align: center;
+      padding: 10px;
+      border: 2px solid black;
+      max-width: 320px;
+      margin: 40px auto;
+      box-shadow: 4px 4px 0 #000;
+    }
+
+    h3 {
+      background: #000080;
+      color: white;
+      font-size: 14px;
+      padding: 5px;
+      margin: -10px -10px 10px -10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h3 span {
+      display: flex;
+      gap: 4px;
+    }
+
+    .progress-container {
+      border: 2px solid black;
+      background: #999;
+      height: 20px;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .progress-bar {
+      background: #00a800;
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s;
+    }
+
+    button {
+      border: 2px solid black;
+      background: #c0c0c0;
+      font-weight: bold;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 2px;
+    }
+
+    .ctrl-btn {
+      background: #c0c0c0;
+      border: 1px solid #000;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      line-height: 10px;
+      cursor: pointer;
+    }
+
+    .ctrl-btn:hover {
+      background: #808080;
+    }
+  </style>
 </head>
 <body>
-<div class="win95-window">
-  <div class="win95-titlebar">
-    <div>🏠 На хату</div>
-    <div class="buttons">
-      <div class="win95-button">_</div>
-      <div class="win95-button">□</div>
-      <div class="win95-button">X</div>
-    </div>
-  </div>
-  <div class="win95-content">
-    <div>Собрано: <span id="amount">0</span> / 10000 ₽</div>
-    <div class="bar"><div class="progress" id="progress"></div></div>
-    <button class="button" id="connect">🔗 Подключить DonationAlerts</button>
-  </div>
-</div>
+  <h3>
+    🏠 На хату
+    <span class="window-controls">
+      <div class="ctrl-btn">_</div>
+      <div class="ctrl-btn">□</div>
+      <div class="ctrl-btn">×</div>
+    </span>
+  </h3>
 
-<audio id="ding" preload="auto">
-  <source src="https://upload.wikimedia.org/wikipedia/commons/7/73/Windows_95_startup_sound.ogg" type="audio/ogg">
-</audio>
+  <div id="goal">Собрано: 0 / 10000 ₽</div>
+  <div class="progress-container"><div id="bar" class="progress-bar"></div></div>
 
-<script>
-const CLIENT_ID = "16526"; // твой ID приложения
-const REDIRECT_URI = "https://archiestarkh.github.io/archstrkh/";
-const SCOPE = "oauth-user-show+donation-subscribe";
-const GOAL = 10000;
+  <button id="connect">🔗 Подключить DonationAlerts</button>
 
-const authBtn = document.getElementById("connect");
-const amountEl = document.getElementById("amount");
-const progressEl = document.getElementById("progress");
-const ding = document.getElementById("ding");
+  <script>
+    // === Настройки ===
+    const clientId = "16526"; // твой ID приложения с DonationAlerts
+    const redirectUri = "https://archiestarkh.github.io/archstrkh/";
+    const scope = "oauth-user-show+donation-subscribe";
+    const authUrl = `https://www.donationalerts.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}`;
+    const goal = 10000;
 
-let lastTotal = 0;
+    // === DOM элементы ===
+    const connectBtn = document.getElementById("connect");
+    const goalText = document.getElementById("goal");
+    const bar = document.getElementById("bar");
 
-authBtn.addEventListener("click", () => {
-  const authUrl = `https://www.donationalerts.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=${SCOPE}`;
-  window.location.href = authUrl;
-});
+    // === Проверяем токен в URL (после авторизации) ===
+    if (location.hash.includes("access_token")) {
+      const params = new URLSearchParams(location.hash.substring(1));
+      const accessToken = params.get("access_token");
+      if (accessToken) {
+        localStorage.setItem("da_token", accessToken);
+        history.replaceState(null, "", redirectUri); // чистим адресную строку
+        alert("✅ DonationAlerts подключён!");
+      }
+    }
 
-function getTokenFromHash() {
-  const hash = window.location.hash.substr(1);
-  const params = new URLSearchParams(hash);
-  return params.get("access_token");
-}
+    // === Берём токен из хранилища ===
+    const token = localStorage.getItem("da_token");
 
-async function getDonations(token) {
-  try {
-    const res = await fetch("https://www.donationalerts.com/api/v1/alerts/donations", {
-      headers: { Authorization: "Bearer " + token }
-    });
-    const data = await res.json();
-    let sum = 0;
-    data.data.forEach(d => sum += parseFloat(d.amount_main));
-    return sum;
-  } catch (e) {
-    console.error(e);
-    return 0;
-  }
-}
+    connectBtn.onclick = () => {
+      window.location.href = authUrl;
+    };
 
-async function updateGoal() {
-  const token = getTokenFromHash();
-  if (!token) return;
-  authBtn.style.display = "none";
+    // === Обновление прогресса ===
+    const updateProgress = (current) => {
+      const percent = Math.min((current / goal) * 100, 100);
+      bar.style.width = percent + "%";
+      goalText.textContent = `Собрано: ${current} / ${goal} ₽`;
+    };
 
-  const total = await getDonations(token);
-  amountEl.textContent = total.toFixed(0);
-  const percent = Math.min((total / GOAL) * 100, 100);
-  progressEl.style.width = percent + "%";
+    // === Если токен уже есть ===
+    if (token) {
+      connectBtn.disabled = true;
+      connectBtn.textContent = "✅ DonationAlerts подключён";
 
-  if (total > lastTotal) {
-    ding.play();
-  }
-  lastTotal = total;
-}
-
-updateGoal();
-setInterval(updateGoal, 10000);
-</script>
+      // 💡 Пример фейковых обновлений (замени позже на реальные)
+      let current = 2500;
+      updateProgress(current);
+    }
+  </script>
 </body>
 </html>
 
